@@ -58,15 +58,17 @@ Path
 
 Options
   -u, --update          Interactive update.
+  -y, --update-all      Uninteractive update. Apply all updates without prompting.
   -g, --global          Look at global modules.
   -s, --skip-unused     Skip check for unused packages.
   -p, --production      Skip devDependencies.
   -d, --dev-only        Look at devDependencies only (skip dependencies).
   -i, --ignore          Ignore dependencies based on succeeding glob.
   -E, --save-exact      Save exact version (x.y.z) instead of caret (^x.y.z) in package.json.
+  --specials            List of depcheck specials to include in check for unused dependencies.
   --no-color            Force or disable color output.
   --no-emoji            Remove emoji support. No emoji in default in CI environments.
-  --debug               Debug output. Throw in a gist when creating issues on github.
+  --debug               Show debug output. Throw in a gist when creating issues on github.
 
 Examples
   $ npm-check           # See what can be updated, what isn't being used.
@@ -103,9 +105,15 @@ You can also use this for dry-run testing:
 NPM_CHECK_INSTALLER=echo npm-check -u
 ```
 
+#### `-y, --update-all`
+
+Updates your dependencies like `--update`, just without any prompt. This is especially useful if you want to automate your dependency updates with `npm-check`.
+
 #### `-g, --global`
 
 Check the versions of your globally installed packages.
+
+If the value of `process.env.NODE_PATH` is set, it will override the default path of global node_modules returned by package [`global-modules`](https://www.npmjs.com/package/global-modules).
 
 _Tip: Use `npm-check -u -g` to do a safe interactive update of global modules, including npm itself._
 
@@ -142,6 +150,14 @@ Install packages using `--save-exact`, meaning exact versions will be saved in p
 
 Applies to both `dependencies` and `devDependencies`.
 
+#### `--specials`
+
+Check special (e.g. config) files when looking for unused dependencies.
+
+`$ npm-check --specials=bin,webpack` will look in the `scripts` section of package.json and in webpack config.
+
+See [https://github.com/depcheck/depcheck#special](https://github.com/depcheck/depcheck#special) for more information.
+
 #### `--color, --no-color`
 
 Enable or disable color support.
@@ -156,9 +172,6 @@ Enable or disable emoji support. Useful for terminals that don't support them. A
 
 Enable or disable the spinner. Useful for terminals that don't support them. Automatically disabled in CI servers.
 
-
-
-
 ### API
 
 The API is here in case you want to wrap this with your CI toolset.
@@ -170,16 +183,16 @@ npmCheck(options)
   .then(currentState => console.log(currentState.get('packages')));
 ```
 
+#### `update`
+
+* Interactive update.
+* default is `false`
+
 #### `global`
 
 * Check global modules.
 * default is `false`
 * `cwd` is automatically set with this option.
-
-#### `update`
-
-* Interactive update.
-* default is `false`
 
 #### `skipUnused`
 
@@ -192,9 +205,24 @@ npmCheck(options)
 * This is called `--production` on the command line to match `npm`.
 * default is `false`
 
-### `devOnly`
+#### `devOnly`
 
 * Ignore `dependencies` and only check `devDependencies`.
+* default is `false`
+
+#### `ignore`
+
+* Ignore dependencies that match specified glob.
+* default is `[]`
+
+#### `saveExact`
+
+* Update package.json with exact version `x.y.z`  instead of semver range `^x.y.z`.
+* default is `false`
+
+#### `debug`
+
+* Show debug output. Throw in a gist when creating issues on github.
 * default is `false`
 
 #### `cwd`
@@ -202,15 +230,14 @@ npmCheck(options)
 * Override where `npm-check` checks.
 * default is `process.cwd()`
 
-#### `saveExact`
+#### `specials`
 
-* Update package.json with exact version `x.y.z`  instead of semver range `^x.y.z`.
-* default is `false`
-
+* List of [`depcheck`](https://github.com/depcheck/depcheck) special parsers to include.
+* default is `''`
 
 #### `currentState`
 
-The result of the promise is a `currentState` object, look in [state.js](https://github.com/dylang/npm-check/blob/master/lib/util/state.js) to see how it works.
+The result of the promise is a `currentState` object, look in [state.js](lib/state/state.js) to see how it works.
 
 You will probably want `currentState.get('packages')` to get an array of packages and the state of each of them.
 
@@ -240,18 +267,12 @@ Each item in the array will look like the following:
 
 You will also see this if you use `--debug` on the command line.
 
-
-
 ### Inspiration
 
 * [npm outdated](https://www.npmjs.com/doc/cli/npm-outdated.html) - awkward output, requires --depth=0 to be grokable.
 * [david](https://github.com/alanshaw/david) - does not work with private registries.
 * [update-notifier](https://github.com/yeoman/update-notifier) - for single modules, not everything in package.json.
 * [depcheck](https://github.com/depcheck/depcheck) - only part of the puzzle. npm-check uses depcheck.
-
-
-
-
 
 ### About the Author
 
@@ -276,15 +297,9 @@ Here's some of my other Node projects:
 
 _This list was generated using [anthology](https://github.com/dylang/anthology)._
 
-
 ### License
 Copyright (c) 2016 Dylan Greene, contributors.
 
 Released under the [MIT license](https://tldrlegal.com/license/mit-license).
 
 Screenshots are [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/) (Attribution-ShareAlike).
-
-***
-_Generated using [grunt-readme](https://github.com/jonschlinkert/grunt-readme) with [grunt-templates-dylang](https://github.com/dylang/grunt-templates-dylang) on Thursday, April 7, 2016._
-_To make changes to this document look in `/templates/readme/`
-
